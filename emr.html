@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMR Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success-color: #059669;
+            --warning-color: #d97706;
+        }
+
+        body {
+            background: #f8fafc;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .patient-header {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-info h1 {
+            font-size: 1.5rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-info p {
+            color: #64748b;
+        }
+
+        .schedule-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .schedule-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .vital-stat {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .vital-stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vital-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .records-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .record-item {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .record-date {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .record-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .record-details {
+            color: #64748b;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+
+            .vitals-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="patient-header">
+        <div class="patient-info">
+            <h1>John Smith</h1>
+            <p>45 years • Male • ID: PT-001</p>
+        </div>
+        <button class="schedule-btn">
+            <i class="fas fa-calendar"></i>
+            Schedule Follow-up
+        </button>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-heart fa-lg" style="color: var(--primary-color)"></i>
+                <h2>Latest Vitals</h2>
+            </div>
+            <div class="vitals-grid">
+                <div class="vital-stat">
+                    <div class="vital-stat-label">
+                        <i class="fas fa-heartbeat"></i>
+                        Blood Pressure
+                    </div>
+                    <div class="vital-stat-value">120/80</div>
+                </div>
+                <div class="vital-stat">
+                    <div class="vital-stat-label">
+                        <i class="fas fa-heart"></i>
+                        Heart Rate
+                    </div>
+                    <div class="vital-stat-value">72 bpm</div>
+                </div>
+                <div class="vital-stat">
+                    <div class="vital-stat-label">
+                        <i class="fas fa-temperature-high"></i>
+                        Temperature
+                    </div>
+                    <div class="vital-stat-value">98.6°F</div>
+                </div>
+                <div class="vital-stat">
+                    <div class="vital-stat-label">
+                        <i class="fas fa-weight"></i>
+                        Weight
+                    </div>
+                    <div class="vital-stat-value">70 kg</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line fa-lg" style="color: var(--primary-color)"></i>
+                <h2>Vital Signs Trend</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="vitalsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-pills fa-lg" style="color: var(--primary-color)"></i>
+                <h2>Medication Adherence</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="medicationChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-medical fa-lg" style="color: var(--primary-color)"></i>
+                <h2>Recent Records</h2>
+            </div>
+            <div class="records-list">
+                <div class="record-item">
+                    <div class="record-date">January 1, 2025</div>
+                    <div class="record-title">Regular Check-up</div>
+                    <div class="record-details">
+                        BP: 120/80 • HR: 72 bpm • Temp: 98.6°F • Weight: 70 kg
+                    </div>
+                </div>
+                <div class="record-item">
+                    <div class="record-date">December 15, 2024</div>
+                    <div class="record-title">Follow-up Visit</div>
+                    <div class="record-details">
+                        BP: 118/79 • HR: 70 bpm • Temp: 98.4°F • Weight: 69.5 kg
+                    </div>
+                </div>
+                <div class="record-item">
+                    <div class="record-date">December 1, 2024</div>
+                    <div class="record-title">Regular Check-up</div>
+                    <div class="record-details">
+                        BP: 122/82 • HR: 74 bpm • Temp: 98.7°F • Weight: 69.8 kg
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Vitals Chart
+        const vitalsCtx = document.getElementById('vitalsChart').getContext('2d');
+        new Chart(vitalsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Dec 1', 'Dec 15', 'Dec 30', 'Jan 1'],
+                datasets: [
+                    {
+                        label: 'Heart Rate',
+                        data: [72, 70, 74, 71],
+                        borderColor: '#2563eb',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Weight (kg)',
+                        data: [70, 69.5, 69.8, 69.2],
+                        borderColor: '#059669',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+
+        // Medication Chart
+        const medicationCtx = document.getElementById('medicationChart').getContext('2d');
+        new Chart(medicationCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Amlodipine', 'Metformin', 'Aspirin', 'Atorvastatin'],
+                datasets: [{
+                    label: 'Adherence %',
+                    data: [95, 88, 92, 85],
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

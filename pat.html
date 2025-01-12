@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Tracking</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            background: #f8fafc;
+            padding: 2rem;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-title {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .patient-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .patient-card {
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .patient-card:hover {
+            border-color: var(--primary-light);
+            transform: translateX(4px);
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-info {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-critical {
+            background: #fef2f2;
+            color: var(--danger);
+        }
+
+        .status-stable {
+            background: #ecfdf5;
+            color: var(--success);
+        }
+
+        .status-warning {
+            background: #fffbeb;
+            color: var(--warning);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+            
+            body {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Patient Tracking</h1>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-title">
+                <i class="fas fa-user-injured fa-lg" style="color: var(--primary-color)"></i>
+                Total Active Patients
+            </div>
+            <div class="stat-value">1,234</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">
+                <i class="fas fa-procedures fa-lg" style="color: var(--danger)"></i>
+                Critical Cases
+            </div>
+            <div class="stat-value">23</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">
+                <i class="fas fa-user-check fa-lg" style="color: var(--success)"></i>
+                Recovered This Month
+            </div>
+            <div class="stat-value">45</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">
+                <i class="fas fa-user-plus fa-lg" style="color: var(--warning)"></i>
+                New Admissions
+            </div>
+            <div class="stat-value">18</div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-users" style="color: var(--primary-color)"></i>
+                    Patient List
+                </div>
+            </div>
+            <input type="text" class="search-box" placeholder="Search patients...">
+            <div class="filters">
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">Critical</button>
+                <button class="filter-btn">Stable</button>
+                <button class="filter-btn">Under Review</button>
+            </div>
+            <div class="patient-list">
+                <div class="patient-card">
+                    <div class="patient-name">John Smith</div>
+                    <div class="patient-info">
+                        <i class="fas fa-heartbeat"></i>
+                        Hypertension
+                    </div>
+                    <div class="patient-info">
+                        <i class="fas fa-calendar"></i>
+                        Admitted: Jan 1, 2025
+                    </div>
+                    <span class="status-badge status-critical">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Critical
+                    </span>
+                </div>
+
+                <div class="patient-card">
+                    <div class="patient-name">Sarah Johnson</div>
+                    <div class="patient-info">
+                        <i class="fas fa-lungs"></i>
+                        Asthma
+                    </div>
+                    <div class="patient-info">
+                        <i class="fas fa-calendar"></i>
+                        Admitted: Dec 28, 2024
+                    </div>
+                    <span class="status-badge status-stable">
+                        <i class="fas fa-check-circle"></i>
+                        Stable
+                    </span>
+                </div>
+
+                <div class="patient-card">
+                    <div class="patient-name">Michael Brown</div>
+                    <div class="patient-info">
+                        <i class="fas fa-virus"></i>
+                        Pneumonia
+                    </div>
+                    <div class="patient-info">
+                        <i class="fas fa-calendar"></i>
+                        Admitted: Dec 30, 2024
+                    </div>
+                    <span class="status-badge status-warning">
+                        <i class="fas fa-clock"></i>
+                        Under Review
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fas fa-chart-line" style="color: var(--primary-color)"></i>
+                    Patient Statistics
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="admissionsChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Admissions Chart
+        const admissionsCtx = document.getElementById('admissionsChart').getContext('2d');
+        new Chart(admissionsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'],
+                datasets: [{
+                    label: 'New Admissions',
+                    data: [65, 59, 80, 81, 56, 55],
+                    borderColor: '#2563eb',
+                    tension: 0.4
+                },
+                {
+                    label: 'Discharged',
+                    data: [45, 50, 66, 70, 45, 48],
+                    borderColor: '#10b981',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Patient Admissions & Discharges'
+                    }
+                }
+            }
+        });
+
+        // Status Distribution Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Critical', 'Stable', 'Under Review'],
+                datasets: [{
+                    data: [23, 156, 45],
+                    backgroundColor: ['#ef4444', '#10b981', '#f59e0b']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Patient Status Distribution'
+                    }
+                }
+            }
+        });
+
+        // Filter Buttons Interaction
+        document.querySelectorAll('.filter-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

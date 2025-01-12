@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthConnect Pro - Calendar</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.0/Recharts.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --success-color: #059669;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-box h3 {
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-box .value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .appointments-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+        }
+
+        .calendar-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover {
+            background: #eff6ff;
+            color: var(--primary-dark);
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .weekday {
+            text-align: center;
+            font-weight: 500;
+            color: #64748b;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--primary-color);
+            background: #f8fafc;
+        }
+
+        .calendar-day.today {
+            background: #eff6ff;
+            border-color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .calendar-day.has-appointments::after {
+            content: '';
+            position: absolute;
+            bottom: 0.3rem;
+            width: 0.4rem;
+            height: 0.4rem;
+            background: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .calendar-legend {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-dot {
+            width: 0.4rem;
+            height: 0.4rem;
+            background: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .legend-today {
+            width: 0.75rem;
+            height: 0.75rem;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            background: #eff6ff;
+        }
+
+        .appointments-list {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .appointments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .appointment-card {
+            padding: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .appointment-card:hover {
+            border-color: var(--primary-light);
+            transform: translateX(4px);
+        }
+
+        .appointment-time {
+            color: var(--primary-dark);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .appointment-patient {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .appointment-type {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .appointments-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-day {
+                padding: 0.25rem;
+                font-size: 0.75rem;
+            }
+
+            .weekday {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="stats-container">
+            <div class="stat-box">
+                <h3>Today's Appointments</h3>
+                <div class="value">8</div>
+            </div>
+            <div class="stat-box">
+                <h3>This Week</h3>
+                <div class="value">42</div>
+            </div>
+            <div class="stat-box">
+                <h3>Completion Rate</h3>
+                <div class="value">95%</div>
+            </div>
+            <div class="stat-box">
+                <h3>Pending Confirmations</h3>
+                <div class="value">3</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div id="appointmentsChart"></div>
+        </div>
+
+        <div class="appointments-grid">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <h2 class="calendar-title">January 2025</h2>
+                    <div class="calendar-nav">
+                        <button class="nav-button">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="nav-button">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="weekdays">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="calendar-day"></div>
+                    <div class="calendar-day"></div>
+                    <div class="calendar-day has-appointments">1</div>
+                    <div class="calendar-day">2</div>
+                    <div class="calendar-day has-appointments">3</div>
+                    <div class="calendar-day">4</div>
+                    <div class="calendar-day">5</div>
+                    <div class="calendar-day has-appointments">6</div>
+                    <div class="calendar-day">7</div>
+                    <div class="calendar-day">8</div>
+                    <div class="calendar-day has-appointments">9</div>
+                    <div class="calendar-day">10</div>
+                    <div class="calendar-day today">11</div>
+                    <div class="calendar-day has-appointments">12</div>
+                    <div class="calendar-day">13</div>
+                    <div class="calendar-day">14</div>
+                    <div class="calendar-day has-appointments">15</div>
+                    <div class="calendar-day">16</div>
+                    <div class="calendar-day">17</div>
+                    <div class="calendar-day">18</div>
+                    <div class="calendar-day has-appointments">19</div>
+                    <div class="calendar-day">20</div>
+                    <div class="calendar-day">21</div>
+                    <div class="calendar-day has-appointments">22</div>
+                    <div class="calendar-day">23</div>
+                    <div class="calendar-day">24</div>
+                    <div class="calendar-day">25</div>
+                    <div class="calendar-day has-appointments">26</div>
+                    <div class="calendar-day">27</div>
+                    <div class="calendar-day">28</div>
+                    <div class="calendar-day">29</div>
+                    <div class="calendar-day">30</div>
+                    <div class="calendar-day">31</div>
+                </div>
+
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot"></div>
+                        <span>Has Appointments</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-today"></div>
+                        <span>Today</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="appointments-list">
+                <div class="appointments-header">
+                    <h2>Today's Appointments</h2>
+                    <button class="button-primary">
+                        <i class="fas fa-plus"></i> New Appointment
+                    </button>
+                </div>
+
+                <div class="appointment-card">
+                    <div class="appointment-time">09:00 AM</div>
+                    <div class="appointment-patient">Sarah Anderson</div>
+                    <div class="appointment-type">Follow-up Consultation</div>
+                </div>
+
+                <div class="appointment-card">
+                    <div class="appointment-time">10:30 AM</div>
+                    <div class="appointment-patient">Michael Chen</div>
+                    <div class="appointment-type">Initial Consultation</div>
+                </div>
+
+                <div class="appointment-card">
+                    <div class="appointment-time">02:00 PM</div>
+                    <div class="appointment-patient">Emily Wilson</div>
+                    <div class="appointment-type">Lab Results Review</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } = Recharts;
+
+        const data = [
+            { name: 'Mon', appointments: 6 },
+            { name: 'Tue', appointments: 8 },
+            { name: 'Wed', appointments: 5 },
+            { name: 'Thu', appointments: 9 },
+            { name: 'Fri', appointments: 7 },
+            { name: 'Sat', appointments: 4 },
+            { name: 'Sun', appointments: 3 }
+        ];
+
+        const AppointmentsChart = () => {
+            return React.createElement(BarChart, {
+                width: 800,
+                height: 300,
+                data: data,
+                margin: { top: 20, right: 30, left: 20, bottom: 5 }
+            },
+                React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
+                React.createElement(XAxis, { dataKey: "name" }),
+                React.createElement(YAxis),
+                React.createElement(Tooltip),
+                React.createElement(Legend),
+                React.createElement(Bar, {
+                    dataKey: "appointments",
+                    fill: "#2563eb"
+                })
+            );
+        };
+
+        // Render the chart
+        ReactDOM.render(
+            React.createElement(AppointmentsChart),
+            document.getElementById('appointmentsChart')
+        );
+    </script>
+</body>
+</html>
